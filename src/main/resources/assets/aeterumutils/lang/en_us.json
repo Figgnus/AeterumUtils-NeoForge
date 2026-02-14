@@ -1,0 +1,8 @@
+{
+  "message.aeterumutils.afk.on": "You are now AFK. You will not be kicked for inactivity.",
+  "message.aeterumutils.afk.off": "AFK disabled.",
+  "message.aeterumutils.afk.off_moved": "AFK disabled because you moved.",
+  "message.aeterumutils.afk.kick_countdown": "AFK kick in %s seconds.",
+  "message.aeterumutils.afk.kicked": "Kicked for being AFK too long. Use /afk if you need to stay connected.",
+  "message.aeterumutils.afk.players_only": "Only players can use /afk."
+}

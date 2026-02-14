@@ -1,0 +1,14 @@
+[
+  {
+    "uuid": "380df991-f603-344c-a090-369bad2a924a",
+    "name": "Dev",
+    "level": 4,
+    "bypassesPlayerLimit": false
+  },
+  {
+    "uuid": "7e1cc691-e75f-3837-8f1f-3aa4f11eed06",
+    "name": "Figgnus",
+    "level": 4,
+    "bypassesPlayerLimit": false
+  }
+]

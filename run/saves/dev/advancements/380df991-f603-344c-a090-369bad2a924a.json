@@ -1,0 +1,33 @@
+{
+  "minecraft:recipes/decorations/crafting_table": {
+    "criteria": {
+      "unlock_right_away": "2026-02-14 20:53:18 +0100"
+    },
+    "done": true
+  },
+  "minecraft:adventure/adventuring_time": {
+    "criteria": {
+      "minecraft:savanna": "2026-02-14 20:53:18 +0100"
+    },
+    "done": false
+  },
+  "create:root": {
+    "criteria": {
+      "0": "2026-02-14 20:53:29 +0100"
+    },
+    "done": true
+  },
+  "numismatics:root": {
+    "criteria": {
+      "0": "2026-02-14 20:53:29 +0100"
+    },
+    "done": true
+  },
+  "numismatics:recipes/misc/crafting/banking_guide": {
+    "criteria": {
+      "has_item": "2026-02-14 20:53:36 +0100"
+    },
+    "done": true
+  },
+  "DataVersion": 3955
+}

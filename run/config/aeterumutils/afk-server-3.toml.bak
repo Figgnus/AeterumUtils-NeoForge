@@ -1,0 +1,23 @@
+[afk]
+	#Seconds of inactivity before a non-/afk player is disconnected.
+	# Default: 300
+	# Range: > 1
+	timeoutSeconds = 15
+	#How many seconds before disconnect to start showing countdown messages.
+	# Default: 10
+	# Range: > 1
+	warningWindowSeconds = 15
+
+[messages]
+	#Shown when player enables /afk.
+	afkOn = "You are now AFK. You will not be kicked for inactivity."
+	#Shown when player disables /afk with the command.
+	afkOff = "AFK disabled."
+	#Shown when AFK mode is disabled by movement.
+	afkOffMoved = "AFK disabled because you moved."
+	#Disconnect reason shown to kicked players.
+	kicked = "Kicked for being AFK too long. Use /afk if you need to stay connected."
+	#Shown when /afk is run by non-player command source.
+	playersOnly = "Only players can use /afk."
+	#Countdown text shown in action bar. Use {seconds} placeholder.
+	kickCountdown = "AFK kick in {seconds} seconds."
