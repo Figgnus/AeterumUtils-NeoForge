@@ -14,7 +14,9 @@ import net.neoforged.neoforge.event.RegisterCommandsEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.event.tick.ServerTickEvent;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -52,7 +54,8 @@ public final class AfkHandler {
         syncPriceCooldownConfig();
         boolean shouldCheckInactivity = event.getServer().getTickCount() % 20 == 0;
         long now = Util.getMillis();
-        for (ServerPlayer player : event.getServer().getPlayerList().getPlayers()) {
+        List<ServerPlayer> playersSnapshot = new ArrayList<>(event.getServer().getPlayerList().getPlayers());
+        for (ServerPlayer player : playersSnapshot) {
             UUID playerId = player.getUUID();
             ActivityState currentState = new ActivityState(player.position(), player.getYRot(), player.getXRot());
             updatePlayerActivity(playerId, currentState, now);
