@@ -2,7 +2,7 @@
 	#Seconds of inactivity before a non-/afk player is disconnected.
 	# Default: 300
 	# Range: > 1
-	timeoutSeconds = 300
+	timeoutSeconds = 10
 	#How many seconds before disconnect to start showing countdown messages.
 	# Default: 10
 	# Range: > 1
@@ -19,6 +19,10 @@
 	# Default: 3600
 	# Range: > 1
 	afkUpkeepIntervalSeconds = 3600
+	#Cooldown for /afk activation cost. If > 0, re-enabling /afk during this cooldown does not charge again. Set to 0 to disable.
+	# Default: 3600
+	# Range: > 0
+	afkPriceCooldownSeconds = 3600
 
 [messages]
 	#Shown when player enables /afk.
@@ -43,3 +47,7 @@
 	afkCanceledBalanceUnavailable = "AFK protection canceled because balance verification failed. Required upkeep: {required} spur."
 	#Shown whenever AFK upkeep is charged. Supports {amount} and {balance}.
 	afkUpkeepCharged = "AFK upkeep charged: {amount} spur. New balance: {balance} spur."
+	#Shown when AFK activation price cooldown starts. Supports {remaining} and {seconds}.
+	afkPriceCooldownStarted = "AFK price cooldown started: {remaining}."
+	#Shown whenever /afk is used while AFK activation price cooldown is active. Supports {remaining} and {seconds}.
+	afkPriceCooldownActive = "AFK activation charge is on cooldown. No charge applied. Time left: {remaining}."

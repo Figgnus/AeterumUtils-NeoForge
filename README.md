@@ -13,6 +13,7 @@ Server-side utility mod for NeoForge `1.21.1` focused on AFK handling with optio
 - Chat messages do not cancel AFK.
 - Configurable Create: Numismatics requirements:
   - one-time AFK activation cost
+  - configurable activation price cooldown (no re-charge within cooldown window)
   - recurring AFK upkeep cost (interval + amount)
 - Runtime config reload command:
   - `/aeterumutils reload`
@@ -38,6 +39,7 @@ Config file path:
 - `timeoutSeconds`: Inactivity kick timeout.
 - `warningWindowSeconds`: Seconds before kick to start countdown warnings.
 - `numismaticsRequiredSpurs`: One-time cost to enable AFK.
+- `afkPriceCooldownSeconds`: Cooldown for AFK activation price. If active, `/afk` re-enable does not charge again.
 - `afkUpkeepSpurs`: Recurring AFK upkeep charge amount.
 - `afkUpkeepIntervalSeconds`: Time between upkeep charges.
 

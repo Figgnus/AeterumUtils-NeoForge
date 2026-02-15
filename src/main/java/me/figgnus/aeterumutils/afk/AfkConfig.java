@@ -8,6 +8,7 @@ public final class AfkConfig {
     private static final ModConfigSpec.IntValue AFK_TIMEOUT_SECONDS;
     private static final ModConfigSpec.IntValue KICK_WARNING_SECONDS;
     private static final ModConfigSpec.IntValue NUMISMATICS_REQUIRED_SPURS;
+    private static final ModConfigSpec.IntValue AFK_PRICE_COOLDOWN_SECONDS;
     private static final ModConfigSpec.IntValue AFK_UPKEEP_SPURS;
     private static final ModConfigSpec.IntValue AFK_UPKEEP_INTERVAL_SECONDS;
     private static final ModConfigSpec.ConfigValue<String> MESSAGE_AFK_ON;
@@ -21,6 +22,8 @@ public final class AfkConfig {
     private static final ModConfigSpec.ConfigValue<String> MESSAGE_AFK_CANCELED_NOT_ENOUGH_BALANCE;
     private static final ModConfigSpec.ConfigValue<String> MESSAGE_AFK_CANCELED_BALANCE_UNAVAILABLE;
     private static final ModConfigSpec.ConfigValue<String> MESSAGE_AFK_UPKEEP_CHARGED;
+    private static final ModConfigSpec.ConfigValue<String> MESSAGE_AFK_PRICE_COOLDOWN_STARTED;
+    private static final ModConfigSpec.ConfigValue<String> MESSAGE_AFK_PRICE_COOLDOWN_ACTIVE;
 
     static {
         ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
@@ -35,6 +38,9 @@ public final class AfkConfig {
         NUMISMATICS_REQUIRED_SPURS = builder
             .comment("Minimum Create: Numismatics balance (in spur) required to enable /afk.")
             .defineInRange("numismaticsRequiredSpurs", 50, 0, Integer.MAX_VALUE);
+        AFK_PRICE_COOLDOWN_SECONDS = builder
+            .comment("Cooldown for /afk activation cost. If > 0, re-enabling /afk during this cooldown does not charge again. Set to 0 to disable.")
+            .defineInRange("afkPriceCooldownSeconds", 3600, 0, Integer.MAX_VALUE);
         AFK_UPKEEP_SPURS = builder
             .comment("Create: Numismatics spur cost charged while AFK after each upkeep interval. Set to 0 to disable upkeep charging.")
             .defineInRange("afkUpkeepSpurs", 50, 0, Integer.MAX_VALUE);
@@ -77,6 +83,12 @@ public final class AfkConfig {
         MESSAGE_AFK_UPKEEP_CHARGED = builder
             .comment("Shown whenever AFK upkeep is charged. Supports {amount} and {balance}.")
             .define("afkUpkeepCharged", "AFK upkeep charged: {amount} spur. New balance: {balance} spur.");
+        MESSAGE_AFK_PRICE_COOLDOWN_STARTED = builder
+            .comment("Shown when AFK activation price cooldown starts. Supports {remaining} and {seconds}.")
+            .define("afkPriceCooldownStarted", "AFK price cooldown started: {remaining}.");
+        MESSAGE_AFK_PRICE_COOLDOWN_ACTIVE = builder
+            .comment("Shown whenever /afk is used while AFK activation price cooldown is active. Supports {remaining} and {seconds}.")
+            .define("afkPriceCooldownActive", "AFK activation charge is on cooldown. No charge applied. Time left: {remaining}.");
         builder.pop();
 
         SPEC = builder.build();
@@ -95,6 +107,10 @@ public final class AfkConfig {
 
     public static int numismaticsRequiredSpurs() {
         return NUMISMATICS_REQUIRED_SPURS.get();
+    }
+
+    public static long afkPriceCooldownSeconds() {
+        return AFK_PRICE_COOLDOWN_SECONDS.get();
     }
 
     public static int afkUpkeepSpurs() {
@@ -147,5 +163,13 @@ public final class AfkConfig {
 
     public static String messageAfkUpkeepCharged() {
         return MESSAGE_AFK_UPKEEP_CHARGED.get();
+    }
+
+    public static String messageAfkPriceCooldownStarted() {
+        return MESSAGE_AFK_PRICE_COOLDOWN_STARTED.get();
+    }
+
+    public static String messageAfkPriceCooldownActive() {
+        return MESSAGE_AFK_PRICE_COOLDOWN_ACTIVE.get();
     }
 }

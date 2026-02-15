@@ -11,6 +11,14 @@
 	# Default: 50
 	# Range: > 0
 	numismaticsRequiredSpurs = 50
+	#Create: Numismatics spur cost charged while AFK after each upkeep interval. Set to 0 to disable upkeep charging.
+	# Default: 50
+	# Range: > 0
+	afkUpkeepSpurs = 50
+	#Seconds between AFK upkeep charges.
+	# Default: 3600
+	# Range: > 1
+	afkUpkeepIntervalSeconds = 5
 
 [messages]
 	#Shown when player enables /afk.
@@ -29,3 +37,7 @@
 	notEnoughBalance = "You need at least {required} spur to use /afk. Your balance: {balance} spur."
 	#Shown when Create: Numismatics balance cannot be read. Supports {required}.
 	balanceUnavailable = "Cannot verify your Create: Numismatics balance right now. Required: {required} spur."
+	#Shown when AFK upkeep payment fails due to low balance. Supports {required} and {balance}.
+	afkCanceledNotEnoughBalance = "AFK protection canceled. You need {required} spur for upkeep, but your balance is {balance} spur."
+	#Shown when AFK upkeep payment fails because balance cannot be read. Supports {required}.
+	afkCanceledBalanceUnavailable = "AFK protection canceled because balance verification failed. Required upkeep: {required} spur."

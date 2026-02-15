@@ -23,7 +23,9 @@ import static net.minecraft.commands.Commands.literal;
 public final class AfkHandler {
     private static final double MOVEMENT_EPSILON_SQR = 0.0001D;
     private static final float LOOK_EPSILON_DEGREES = 0.2F;
+    private static long LAST_KNOWN_PRICE_COOLDOWN_SECONDS = -1L;
     private static final Map<UUID, AfkState> AFK_PLAYERS = new HashMap<>();
+    private static final Map<UUID, Long> AFK_PRICE_COOLDOWN_UNTIL_MILLIS = new HashMap<>();
     private static final Map<UUID, Long> NEXT_AFK_UPKEEP_MILLIS = new HashMap<>();
     private static final Map<UUID, Long> LAST_COUNTDOWN_SECONDS = new HashMap<>();
     private static final Map<UUID, ActivityState> LAST_KNOWN_STATES = new HashMap<>();
@@ -47,6 +49,7 @@ public final class AfkHandler {
     }
 
     public static void onServerTick(ServerTickEvent.Post event) {
+        syncPriceCooldownConfig();
         boolean shouldCheckInactivity = event.getServer().getTickCount() % 20 == 0;
         long now = Util.getMillis();
         for (ServerPlayer player : event.getServer().getPlayerList().getPlayers()) {
@@ -106,46 +109,70 @@ public final class AfkHandler {
             source.sendFailure(Component.literal(AfkConfig.messagePlayersOnly()));
             return 0;
         }
+        syncPriceCooldownConfig();
 
         UUID playerId = player.getUUID();
+        long now = Util.getMillis();
+        int requiredSpurs = Math.max(0, AfkConfig.numismaticsRequiredSpurs());
+        long priceCooldownSeconds = Math.max(0L, AfkConfig.afkPriceCooldownSeconds());
+        long priceCooldownUntilMillis = AFK_PRICE_COOLDOWN_UNTIL_MILLIS.getOrDefault(playerId, 0L);
+        if (priceCooldownUntilMillis <= now) {
+            AFK_PRICE_COOLDOWN_UNTIL_MILLIS.remove(playerId);
+            priceCooldownUntilMillis = 0L;
+        }
+        boolean isPriceCooldownActive = requiredSpurs > 0 && priceCooldownSeconds > 0 && priceCooldownUntilMillis > now;
+
         if (AFK_PLAYERS.containsKey(playerId)) {
             AFK_PLAYERS.remove(playerId);
             NEXT_AFK_UPKEEP_MILLIS.remove(playerId);
             player.resetLastActionTime();
-            long now = Util.getMillis();
             LAST_ACTIVITY_MILLIS.put(playerId, now);
             LAST_KNOWN_STATES.put(playerId, new ActivityState(player.position(), player.getYRot(), player.getXRot()));
             LAST_COUNTDOWN_SECONDS.remove(playerId);
             source.sendSuccess(() -> Component.literal(AfkConfig.messageAfkOff()), false);
+            if (isPriceCooldownActive) {
+                player.sendSystemMessage(Component.literal(formatCooldownMessage(AfkConfig.messageAfkPriceCooldownActive(), priceCooldownUntilMillis - now)));
+            }
             return 1;
         }
 
-        int requiredSpurs = Math.max(0, AfkConfig.numismaticsRequiredSpurs());
         if (requiredSpurs > 0) {
-            int balanceSpurs = NumismaticsCompat.getPlayerBalanceSpurs(player);
-            if (balanceSpurs < 0) {
-                source.sendFailure(Component.literal(formatBalanceMessage(AfkConfig.messageBalanceUnavailable(), requiredSpurs, "N/A")));
-                return 0;
-            }
-
-            if (balanceSpurs < requiredSpurs) {
-                source.sendFailure(Component.literal(formatBalanceMessage(AfkConfig.messageNotEnoughBalance(), requiredSpurs, Integer.toString(balanceSpurs))));
-                return 0;
-            }
-
-            if (!NumismaticsCompat.deductPlayerSpurs(player, requiredSpurs)) {
-                int latestBalance = NumismaticsCompat.getPlayerBalanceSpurs(player);
-                if (latestBalance >= 0 && latestBalance < requiredSpurs) {
-                    source.sendFailure(Component.literal(formatBalanceMessage(AfkConfig.messageNotEnoughBalance(), requiredSpurs, Integer.toString(latestBalance))));
-                } else {
+            if (isPriceCooldownActive) {
+                player.sendSystemMessage(Component.literal(formatCooldownMessage(AfkConfig.messageAfkPriceCooldownActive(), priceCooldownUntilMillis - now)));
+            } else {
+                int balanceSpurs = NumismaticsCompat.getPlayerBalanceSpurs(player);
+                if (balanceSpurs < 0) {
                     source.sendFailure(Component.literal(formatBalanceMessage(AfkConfig.messageBalanceUnavailable(), requiredSpurs, "N/A")));
+                    return 0;
                 }
-                return 0;
+
+                if (balanceSpurs < requiredSpurs) {
+                    source.sendFailure(Component.literal(formatBalanceMessage(AfkConfig.messageNotEnoughBalance(), requiredSpurs, Integer.toString(balanceSpurs))));
+                    return 0;
+                }
+
+                if (!NumismaticsCompat.deductPlayerSpurs(player, requiredSpurs)) {
+                    int latestBalance = NumismaticsCompat.getPlayerBalanceSpurs(player);
+                    if (latestBalance >= 0 && latestBalance < requiredSpurs) {
+                        source.sendFailure(Component.literal(formatBalanceMessage(AfkConfig.messageNotEnoughBalance(), requiredSpurs, Integer.toString(latestBalance))));
+                    } else {
+                        source.sendFailure(Component.literal(formatBalanceMessage(AfkConfig.messageBalanceUnavailable(), requiredSpurs, "N/A")));
+                    }
+                    return 0;
+                }
+
+                if (priceCooldownSeconds > 0) {
+                    long cooldownDurationMillis = priceCooldownSeconds * 1000L;
+                    AFK_PRICE_COOLDOWN_UNTIL_MILLIS.put(playerId, now + cooldownDurationMillis);
+                    player.sendSystemMessage(Component.literal(formatCooldownMessage(AfkConfig.messageAfkPriceCooldownStarted(), cooldownDurationMillis)));
+                } else {
+                    AFK_PRICE_COOLDOWN_UNTIL_MILLIS.remove(playerId);
+                }
             }
         }
 
         AFK_PLAYERS.put(playerId, new AfkState(player.position(), player.getYRot(), player.getXRot()));
-        NEXT_AFK_UPKEEP_MILLIS.put(playerId, getNextUpkeepDueMillis(Util.getMillis()));
+        NEXT_AFK_UPKEEP_MILLIS.put(playerId, getNextUpkeepDueMillis(now));
         LAST_KNOWN_STATES.put(playerId, new ActivityState(player.position(), player.getYRot(), player.getXRot()));
         LAST_COUNTDOWN_SECONDS.remove(playerId);
         source.sendSuccess(() -> Component.literal(AfkConfig.messageAfkOn()), false);
@@ -155,6 +182,7 @@ public final class AfkHandler {
     private static int reloadConfig(CommandSourceStack source) {
         try {
             ConfigTracker.INSTANCE.loadConfigs(ModConfig.Type.SERVER, FMLPaths.CONFIGDIR.get());
+            syncPriceCooldownConfig();
             source.sendSuccess(() -> Component.literal("AeterumUtils server config reloaded."), true);
             return 1;
         } catch (Exception e) {
@@ -208,6 +236,28 @@ public final class AfkHandler {
             .replace("{balance}", balanceSpurs);
     }
 
+    private static String formatCooldownMessage(String template, long remainingMillis) {
+        long remainingSeconds = Math.max(0L, (remainingMillis + 999L) / 1000L);
+        String remainingText = formatDuration(remainingSeconds);
+        return template
+            .replace("{remaining}", remainingText)
+            .replace("{seconds}", Long.toString(remainingSeconds));
+    }
+
+    private static String formatDuration(long totalSeconds) {
+        long hours = totalSeconds / 3600L;
+        long minutes = (totalSeconds % 3600L) / 60L;
+        long seconds = totalSeconds % 60L;
+
+        if (hours > 0L) {
+            return hours + "h " + minutes + "m " + seconds + "s";
+        }
+        if (minutes > 0L) {
+            return minutes + "m " + seconds + "s";
+        }
+        return seconds + "s";
+    }
+
     private static void processAfkUpkeep(ServerPlayer player, UUID playerId, long now) {
         int upkeepSpurs = Math.max(0, AfkConfig.afkUpkeepSpurs());
         if (upkeepSpurs <= 0) {
@@ -256,6 +306,19 @@ public final class AfkHandler {
         return template
             .replace("{amount}", Integer.toString(amountSpurs))
             .replace("{balance}", balanceSpurs);
+    }
+
+    private static void syncPriceCooldownConfig() {
+        long currentCooldownSeconds = Math.max(0L, AfkConfig.afkPriceCooldownSeconds());
+        if (LAST_KNOWN_PRICE_COOLDOWN_SECONDS == -1L) {
+            LAST_KNOWN_PRICE_COOLDOWN_SECONDS = currentCooldownSeconds;
+            return;
+        }
+
+        if (LAST_KNOWN_PRICE_COOLDOWN_SECONDS != currentCooldownSeconds) {
+            AFK_PRICE_COOLDOWN_UNTIL_MILLIS.clear();
+            LAST_KNOWN_PRICE_COOLDOWN_SECONDS = currentCooldownSeconds;
+        }
     }
 
     private record ActivityState(Vec3 position, float yRot, float xRot) {
