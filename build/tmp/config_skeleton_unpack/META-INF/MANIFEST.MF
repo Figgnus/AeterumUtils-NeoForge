@@ -1,0 +1,10 @@
+Manifest-Version: 1.0
+Specification-Title: config_skeleton
+Specification-Vendor: TrueHorse
+Specification-Version: 1
+Implementation-Title: Configurable-Skeleton
+Implementation-Version: 1.0.2
+Implementation-Vendor: TrueHorse
+Implementation-Timestamp: 2026-02-21T15:48:59+0100
+MixinConfigs: config_skeleton.mixins.json
+

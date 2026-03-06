@@ -1,0 +1,9 @@
+[skeleton]
+	#Skeleton arrow velocity. Vanilla default is 1.6.
+	# Default: 1.6
+	# Range: 0.1 ~ 10.0
+	arrowVelocity = 1.6
+	#Multiplier applied to vanilla inaccuracy. 1.0 = vanilla, 0.0 = perfect aim, >1.0 = less accurate.
+	# Default: 1.0
+	# Range: 0.0 ~ 10.0
+	inaccuracyMultiplier = 1.0

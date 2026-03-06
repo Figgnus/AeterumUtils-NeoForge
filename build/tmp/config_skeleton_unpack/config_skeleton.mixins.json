@@ -1,0 +1,15 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "compatibilityLevel": "JAVA_17",
+  "package": "net.trueHorse.config_skeleton.mixin",
+  "refmap": "config_skeleton.mixins.refmap.json",
+  "mixins": [
+    "AbstractArrowMixin",
+    "AbstractSkeletonMixin",
+    "RangedBowAttackGoalMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
