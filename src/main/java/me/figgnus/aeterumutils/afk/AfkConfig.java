@@ -5,6 +5,7 @@ import net.neoforged.neoforge.common.ModConfigSpec;
 public final class AfkConfig {
     public static final ModConfigSpec SPEC;
 
+    private static final ModConfigSpec.BooleanValue AFK_ENABLED;
     private static final ModConfigSpec.IntValue AFK_TIMEOUT_SECONDS;
     private static final ModConfigSpec.IntValue KICK_WARNING_SECONDS;
     private static final ModConfigSpec.IntValue NUMISMATICS_REQUIRED_SPURS;
@@ -24,11 +25,15 @@ public final class AfkConfig {
     private static final ModConfigSpec.ConfigValue<String> MESSAGE_AFK_UPKEEP_CHARGED;
     private static final ModConfigSpec.ConfigValue<String> MESSAGE_AFK_PRICE_COOLDOWN_STARTED;
     private static final ModConfigSpec.ConfigValue<String> MESSAGE_AFK_PRICE_COOLDOWN_ACTIVE;
+    private static final ModConfigSpec.ConfigValue<String> MESSAGE_AFK_DISABLED;
 
     static {
         ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
 
         builder.push("afk");
+        AFK_ENABLED = builder
+            .comment("Enable AFK system. When false, /afk and inactivity kicking are disabled.")
+            .define("enabled", false);
         AFK_TIMEOUT_SECONDS = builder
             .comment("Seconds of inactivity before a non-/afk player is disconnected.")
             .defineInRange("timeoutSeconds", 300, 1, Integer.MAX_VALUE);
@@ -89,6 +94,9 @@ public final class AfkConfig {
         MESSAGE_AFK_PRICE_COOLDOWN_ACTIVE = builder
             .comment("Shown whenever /afk is used while AFK activation price cooldown is active. Supports {remaining} and {seconds}.")
             .define("afkPriceCooldownActive", "AFK activation charge is on cooldown. No charge applied. Time left: {remaining}.");
+        MESSAGE_AFK_DISABLED = builder
+            .comment("Shown when /afk is used while AFK feature is disabled.")
+            .define("afkDisabled", "AFK feature is disabled on this server.");
         builder.pop();
 
         SPEC = builder.build();
@@ -99,6 +107,10 @@ public final class AfkConfig {
 
     public static long afkTimeoutSeconds() {
         return AFK_TIMEOUT_SECONDS.get();
+    }
+
+    public static boolean afkEnabled() {
+        return AFK_ENABLED.get();
     }
 
     public static long warningWindowSeconds() {
@@ -171,5 +183,9 @@ public final class AfkConfig {
 
     public static String messageAfkPriceCooldownActive() {
         return MESSAGE_AFK_PRICE_COOLDOWN_ACTIVE.get();
+    }
+
+    public static String messageAfkDisabled() {
+        return MESSAGE_AFK_DISABLED.get();
     }
 }

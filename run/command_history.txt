@@ -1,3 +1,7 @@
 /afk
 /afk help
 /afk
+/time set day
+/gamerule doDaylightCycle false
+/kill
+/afk

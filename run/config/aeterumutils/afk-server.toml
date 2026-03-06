@@ -23,6 +23,8 @@
 	# Default: 3600
 	# Range: > 0
 	afkPriceCooldownSeconds = 3600
+	#Enable AFK system. When false, /afk and inactivity kicking are disabled.
+	enabled = false
 
 [messages]
 	#Shown when player enables /afk.
@@ -51,3 +53,5 @@
 	afkPriceCooldownStarted = "AFK price cooldown started: {remaining}."
 	#Shown whenever /afk is used while AFK activation price cooldown is active. Supports {remaining} and {seconds}.
 	afkPriceCooldownActive = "AFK activation charge is on cooldown. No charge applied. Time left: {remaining}."
+	#Shown when /afk is used while AFK feature is disabled.
+	afkDisabled = "AFK feature is disabled on this server."

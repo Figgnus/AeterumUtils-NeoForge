@@ -2,6 +2,7 @@ package me.figgnus.aeterumutils;
 
 import me.figgnus.aeterumutils.afk.AfkConfig;
 import me.figgnus.aeterumutils.afk.AfkHandler;
+import me.figgnus.aeterumutils.utils.SkeletonConfig;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
@@ -16,6 +17,7 @@ public class Aeterumutils {
 
     public Aeterumutils(IEventBus modEventBus, ModContainer modContainer) {
         modContainer.registerConfig(ModConfig.Type.SERVER, AfkConfig.SPEC, "aeterumutils/afk-server.toml");
+        modContainer.registerConfig(ModConfig.Type.SERVER, SkeletonConfig.SPEC, "aeterumutils/skeleton-server.toml");
         NeoForge.EVENT_BUS.addListener(AfkHandler::onRegisterCommands);
         NeoForge.EVENT_BUS.addListener(AfkHandler::onServerTick);
         NeoForge.EVENT_BUS.addListener(AfkHandler::onPlayerLogout);

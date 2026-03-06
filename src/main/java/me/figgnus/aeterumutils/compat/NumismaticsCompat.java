@@ -1,4 +1,4 @@
-package me.figgnus.aeterumutils.afk;
+package me.figgnus.aeterumutils.compat;
 
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;

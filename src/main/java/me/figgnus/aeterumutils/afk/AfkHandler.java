@@ -1,6 +1,7 @@
 package me.figgnus.aeterumutils.afk;
 
 import me.figgnus.aeterumutils.Aeterumutils;
+import me.figgnus.aeterumutils.compat.NumismaticsCompat;
 import net.minecraft.Util;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.network.chat.Component;
@@ -25,6 +26,7 @@ import static net.minecraft.commands.Commands.literal;
 public final class AfkHandler {
     private static final double MOVEMENT_EPSILON_SQR = 0.0001D;
     private static final float LOOK_EPSILON_DEGREES = 0.2F;
+    private static boolean AFK_FEATURE_ACTIVE = false;
     private static long LAST_KNOWN_PRICE_COOLDOWN_SECONDS = -1L;
     private static final Map<UUID, AfkState> AFK_PLAYERS = new HashMap<>();
     private static final Map<UUID, Long> AFK_PRICE_COOLDOWN_UNTIL_MILLIS = new HashMap<>();
@@ -51,6 +53,15 @@ public final class AfkHandler {
     }
 
     public static void onServerTick(ServerTickEvent.Post event) {
+        if (!AfkConfig.afkEnabled()) {
+            if (AFK_FEATURE_ACTIVE) {
+                clearAfkState();
+                AFK_FEATURE_ACTIVE = false;
+            }
+            return;
+        }
+
+        AFK_FEATURE_ACTIVE = true;
         syncPriceCooldownConfig();
         boolean shouldCheckInactivity = event.getServer().getTickCount() % 20 == 0;
         long now = Util.getMillis();
@@ -108,6 +119,11 @@ public final class AfkHandler {
     }
 
     private static int toggleAfk(CommandSourceStack source) {
+        if (!AfkConfig.afkEnabled()) {
+            source.sendFailure(Component.literal(AfkConfig.messageAfkDisabled()));
+            return 0;
+        }
+
         if (!(source.getEntity() instanceof ServerPlayer player)) {
             source.sendFailure(Component.literal(AfkConfig.messagePlayersOnly()));
             return 0;
@@ -322,6 +338,16 @@ public final class AfkHandler {
             AFK_PRICE_COOLDOWN_UNTIL_MILLIS.clear();
             LAST_KNOWN_PRICE_COOLDOWN_SECONDS = currentCooldownSeconds;
         }
+    }
+
+    private static void clearAfkState() {
+        AFK_PLAYERS.clear();
+        AFK_PRICE_COOLDOWN_UNTIL_MILLIS.clear();
+        NEXT_AFK_UPKEEP_MILLIS.clear();
+        LAST_COUNTDOWN_SECONDS.clear();
+        LAST_KNOWN_STATES.clear();
+        LAST_ACTIVITY_MILLIS.clear();
+        LAST_KNOWN_PRICE_COOLDOWN_SECONDS = -1L;
     }
 
     private record ActivityState(Vec3 position, float yRot, float xRot) {
